@@ -1,52 +1,37 @@
 # mermaid-azure README
 
-This is the README for your extension "mermaid-azure". After writing up a brief description, we recommend including the following sections.
+Mermaid-Azureは、Mermaidを使用してAzureの構成図を作成するためのVisual Studio Code拡張機能です。
+
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Azureの構成図をMermaidのフローチャートで簡単に作成できます。
+- ハブ＆スポークの構成、サブスクリプションやリソースグループの階層構成など、Azureの主要な構成パターンをサポートしています。
+- リソースグループやサブスクリプションは指定された場合のみ回答に含め、それ以外の場合は回答に含めません。
 
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+以下を参考にしてください
+[Chat extensions | Visual Studio Code Extension API](https://code.visualstudio.com/api/extension-guides/chat#prerequisites)
+
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+以下を参考にしてください
+[GitHub Copilot Extensions (Chat Extention？) を自作し隊 – クラウドを勉強し隊](https://www.kentsu.website/ja/posts/2024/copilot_extension/)
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+見つけたら教えてください
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
+ブログ用に作成
 
-### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
+以下はデフォルトのまま
 ---
 
 ## Following extension guidelines
