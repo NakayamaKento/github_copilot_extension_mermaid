@@ -10,12 +10,24 @@
     "Other"
   ],
   "activationEvents": [],
+  "enabledApiProposals": [
+    "chatVariableResolver"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
+    "chatParticipants": [
       {
-        "command": "mermaid-azure.helloWorld",
-        "title": "Hello World"
+        "id": "mermaid-azure.chat",
+        "fullName": "Mermaid",
+        "name": "mermaid",
+        "description": "図を書いたるで",
+        "isSticky": true,
+        "commands": [
+          {
+            "name": "azure_figure",
+            "description": "Azureの構成図を教えてや"
+          }
+        ]
       }
     ]
   },
