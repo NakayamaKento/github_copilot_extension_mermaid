@@ -270,5 +270,21 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 }
 
+function handleError(err: any, stream: vscode.ChatResponseStream): void {
+    // making the chat request might fail because
+    // - model does not exist
+    // - user consent not given
+    // - quote limits exceeded
+    if (err instanceof vscode.LanguageModelError) {
+        console.log(err.message, err.code, err.cause);
+        if (err.cause instanceof Error && err.cause.message.includes('off_topic')) {
+            stream.markdown(vscode.l10n.t('I\'m sorry, I can only explain computer science concepts.'));
+        }
+    } else {
+        // re-throw other errors so they show up in the UI
+        throw err;
+    }
+}
+
 // This method is called when your extension is deactivated
 export function deactivate() { }
