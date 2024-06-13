@@ -9,6 +9,7 @@ Mermaid-Azureは、Mermaidを使用してAzureの構成図を作成するため�
 - ハブ＆スポークの構成、サブスクリプションやリソースグループの階層構成など、Azureの主要な構成パターンをサポートしています。
 - リソースグループやサブスクリプションは指定された場合のみ回答に含め、それ以外の場合は回答に含めません。
 
+<blockquote class="twitter-tweet" data-media-max-width="560"><p lang="ja" dir="ltr">ブログ書きながらもっかい GitHub Copilot Extension (Chat Extension?) を試してる<br>これは GPT-4 を指定した場合 <a href="https://t.co/4jU4AxyChU">pic.twitter.com/4jU4AxyChU</a></p>&mdash; Kento (@kenakay01) <a href="https://twitter.com/kenakay01/status/1801304366437306574?ref_src=twsrc%5Etfw">June 13, 2024</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 ## Requirements
 
