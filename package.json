@@ -2,6 +2,10 @@
   "name": "mermaid-azure",
   "displayName": "mermaid-azure",
   "description": "Create Azure configuration diagrams using Mermaid",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NakayamaKento/github_copilot_extension_mermaid"
+  },
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.90.0"
