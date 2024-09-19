@@ -1,12 +1,14 @@
 {
   "name": "mermaid-azure",
+  "publisher": "kenakay",
   "displayName": "mermaid-azure",
   "description": "Create Azure configuration diagrams using Mermaid",
+  "icon": "./azure_mermaid.jpg",
   "repository": {
     "type": "git",
     "url": "https://github.com/NakayamaKento/github_copilot_extension_mermaid"
   },
-  "version": "0.0.1",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -14,22 +16,23 @@
     "Other"
   ],
   "activationEvents": [],
-  "enabledApiProposals": [
-    "chatVariableResolver"
-  ],
   "main": "./dist/extension.js",
   "contributes": {
     "chatParticipants": [
       {
         "id": "mermaid-azure.chat",
-        "fullName": "Mermaid",
-        "name": "mermaid",
-        "description": "図を書いたるで",
+        "fullName": "Mermaid-Azure",
+        "name": "mermaid-azure",
+        "description": "Architecture と flowchart どっちや",
         "isSticky": true,
         "commands": [
           {
-            "name": "azure_figure",
-            "description": "Azureの構成図を教えてや"
+            "name": "Architecture",
+            "description": "Azure の構成図を教えてや"
+          },
+          {
+            "name": "Flowchart",
+            "description": "Azure の構成図を教えてや"
           }
         ]
       }
