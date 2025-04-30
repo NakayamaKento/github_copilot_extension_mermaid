@@ -1,0 +1,1 @@
+Azure アイコンを利用する際は [Azure アイコン - Azure Architecture Center | Microsoft Learn](https://learn.microsoft.com/ja-jp/azure/architecture/icons/) の利用条件を確認してください
