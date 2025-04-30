@@ -10,9 +10,33 @@ Mermaid-Azure は、Mermaid を使用して Azure の構成図を作成するた
 - 以下のコマンドを用意しています
     - `Architecture` : Mermaid の Architecture に対応しています
     - `Flowchart` : Mermaid の Flowchart に対応しています
+    - `architecture-azureicon`: Architecture で Azure アイコンを使用します
+      - [Mermaid で Azure アイコンを使ったアーキテクチャを書き隊 – クラウドを勉強し隊](https://www.kentsu.website/ja/posts/2024/iconfy_mermaid/)
+      - [VS Code でも Mermaid で Azure アイコンを使ったアーキテクチャを書き隊 - APC 技術ブログ](https://techblog.ap-com.co.jp/entry/2024/11/20/120544)
 
-<blockquote class="twitter-tweet" data-media-max-width="560"><p lang="ja" dir="ltr">ブログ書きながらもっかい GitHub Copilot Extension (Chat Extension?) を試してる<br>これは GPT-4 を指定した場合 <a href="https://t.co/4jU4AxyChU">pic.twitter.com/4jU4AxyChU</a></p>&mdash; Kento (@kenakay01) <a href="https://twitter.com/kenakay01/status/1801304366437306574?ref_src=twsrc%5Etfw">June 13, 2024</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+## 動作イメージ
+下記の内容で動作確認を行いました
 
+### ハブ＆スポークの構成
+プロンプト：ハブ＆スポークの構成です。ハブには FW があります。スポークは2つでそれぞれに VM があります。
+
+<blockquote class="twitter-tweet" data-media-max-width="560"><p lang="ja" dir="ltr">この拡張機能の更新してみてる<br>まずは今まで通りの機能<br>①Mermaid の Flowchart で構成図 <a href="https://t.co/qRRG7GzYVq">pic.twitter.com/qRRG7GzYVq</a></p>&mdash; Kento (@kenakay01) <a href="https://twitter.com/kenakay01/status/1917499226491347229?ref_src=twsrc%5Etfw">April 30, 2025</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+### チャット履歴を参照
+プロンプト：スポーツにサブネットを追加して、その中に VM を追加してください。またサブネットには NSG を入れてください
+
+<blockquote class="twitter-tweet" data-media-max-width="560"><p lang="ja" dir="ltr">続いて新機能<br>②チャットの履歴を参照できるようにした<br><br>作成した構成図の修正が簡単になったー <a href="https://t.co/GGquVRNTRc">pic.twitter.com/GGquVRNTRc</a></p>&mdash; Kento (@kenakay01) <a href="https://twitter.com/kenakay01/status/1917500270667522411?ref_src=twsrc%5Etfw">April 30, 2025</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+### チャット履歴を参照 & コマンドでの使い分け
+プロンプト：先ほどと同じものを作成してください
+少し文法的に正しくない部分がありましたが、概ね正しい構成図を生成してくれました
+
+<blockquote class="twitter-tweet" data-media-max-width="560"><p lang="ja" dir="ltr">次は新機能って感じじゃないけど<br>③プロンプトを見直して architecture-beta に対応させてみた<br><br>文法が守れていない部分が若干あるけど、修正するだけやから下書きとしては OK（と思ってる） <a href="https://t.co/T8re0l5bQv">pic.twitter.com/T8re0l5bQv</a></p>&mdash; Kento (@kenakay01) <a href="https://twitter.com/kenakay01/status/1917501020579717415?ref_src=twsrc%5Etfw">April 30, 2025</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+### コンテキストを参照
+プロンプト：このファイルでデプロイされる構成図を書いてください
+
+<blockquote class="twitter-tweet" data-media-max-width="560"><p lang="ja" dir="ltr">最後の新機能<br>個人的に一番実現したかったところ<br><br>④コンテキストの対応<br>これで Bicep ファイルから構成図の作成 とかが簡単になるはず！！ <a href="https://t.co/7CPLJSGxHR">pic.twitter.com/7CPLJSGxHR</a></p>&mdash; Kento (@kenakay01) <a href="https://twitter.com/kenakay01/status/1917501728142025127?ref_src=twsrc%5Etfw">April 30, 2025</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 ## Requirements
 
 以下を参考にしてください
@@ -30,8 +54,12 @@ Mermaid-Azure は、Mermaid を使用して Azure の構成図を作成するた
 
 ## Release Notes
 
-### 0.0.1
-- ブログ用に作成
+### 0.2.0
+- プロンプトを見直しました
+- コマンド [architecture-azureicon] を追加しました
+- チャット履歴を参照できるようになりました
+- コンテキストを参照できるようになりました
+[GitHub Copilot Chat のエージェントを更新し隊 – クラウドを勉強し隊](https://www.kentsu.website/ja/posts/2025/githubcopilot_extenstion/)
 
 ### 0.1.0
 - Mermaid の Architecture Diagram に対応
@@ -46,6 +74,9 @@ Mermaid-Azure は、Mermaid を使用して Azure の構成図を作成するた
 | command | azure-figure | Flowchart |
 | command | - | Architecture |
 
+
+### 0.0.1
+- ブログ用に作成
 
 以下はデフォルトのまま
 ---

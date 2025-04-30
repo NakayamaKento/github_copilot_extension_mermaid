@@ -8,9 +8,9 @@
     "type": "git",
     "url": "https://github.com/NakayamaKento/github_copilot_extension_mermaid"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.99.0"
   },
   "categories": [
     "Other"
@@ -20,19 +20,23 @@
   "contributes": {
     "chatParticipants": [
       {
-        "id": "mermaid-azure.chat",
-        "fullName": "Mermaid-Azure",
+        "id": "mermaid-azure",
+        "fullName": "Mermaid Azure ",
         "name": "mermaid-azure",
-        "description": "Architecture と flowchart どっちや",
+        "description": "Mermaid で作成したい Azure の構成図を教えて",
         "isSticky": true,
         "commands": [
           {
-            "name": "Architecture",
-            "description": "Azure の構成図を教えてや"
+            "name": "flowchart",
+            "description": "Mermaid の flowchart で構成図を作成"
           },
           {
-            "name": "Flowchart",
-            "description": "Azure の構成図を教えてや"
+            "name": "architecture",
+            "description": "Mermaid の architecture で構成図を作成"
+          },
+          {
+            "name": "architecture-azureicon",
+            "description": "Mermaid の architecture で構成図を作成. Azure のアイコンを使用"
           }
         ]
       }
@@ -46,21 +50,21 @@
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
+    "lint": "eslint src",
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.90.0",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "18.x",
-    "@typescript-eslint/eslint-plugin": "^7.11.0",
-    "@typescript-eslint/parser": "^7.11.0",
-    "eslint": "^8.57.0",
-    "typescript": "^5.4.5",
-    "ts-loader": "^9.5.1",
-    "webpack": "^5.91.0",
-    "webpack-cli": "^5.1.4",
-    "@vscode/test-cli": "^0.0.9",
-    "@vscode/test-electron": "^2.4.0"
+    "@types/vscode": "^1.99.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "eslint": "^9.23.0",
+    "typescript": "^5.8.2",
+    "ts-loader": "^9.5.2",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
   }
 }

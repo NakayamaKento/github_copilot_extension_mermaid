@@ -1,189 +1,105 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { system_prompt_flowchart } from './system_prompt_flowchart';
-import { system_prompt_architecture } from './system_prompt_architecture';
 
-const CHAT_PARTICIPANT_ID = 'mermaid-azure.chat';
-const MERMAID_NAMES_COMMAND_ID = 'mermaid.namesInEditor';
-const MODEL_SELECTOR: vscode.LanguageModelChatSelector = { vendor: 'copilot', family: 'gpt-4o' };
-
-
-interface ICatChatResult extends vscode.ChatResult {
-    metadata: {
-        command: string;
+import * as path from 'path';               // 追加
+/** アクティブなファイルの内容を取得して返す */
+function getCurrentFileContext():
+    | { fileName: string; content: string }
+    | null {
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+        const doc = editor.document;
+        return { fileName: doc.fileName, content: doc.getText() };
     }
+    return null;
 }
 
+const BASE_PROMPT =
+	'GitHub Copilot Agent は、Microsoft Azure のアーキテクチャ構成図を Mermaid 言語で作成するために動作し、ユーザーが指定したサービスやコンポーネントを理解しやすく整理された図として出力できるように支援します。Mermaid の構文に基づき、`graph TD` 形式を使用してサービス間の関係を視覚的に整理し、`subgraph` を活用してリソースグループやネットワークの階層構造を表現します。Azure の主要コンポーネントとして、コンピュート(VM, Azure Functions, App Services)、ストレージ(Blob Storage, SQL Database, Cosmos DB)、ネットワーク(VNet, Load Balancer, Firewall)、アイデンティティ(Azure AD, Managed Identities)、その他(Logic Apps, API Management, Key Vault)をサポートします。ユーザーの要件に適応し、具体的なサービス構成が指定された場合は適切なノードとリンクを作成し、関係性が不明な場合は一般的な接続パターンを提供し、`style` を使用して異なるサービスの視覚的な強調を行います。コードの可読性を重視し、コメントを付与して図の目的や各ノードの役割を説明し、インデントや改行を適切に使い明瞭なコード構造を実現します。これらの指示を含めることで、GitHub Copilot Agent がユーザーの意図に沿った Mermaid 形式の Azure 構成図を生成できるようになります。';
 
-// This method is called when your extension is activated
+const Flowchart_PROMPT =
+	'GitHub Copilot Agent は、Microsoft Azure のアーキテクチャ構成図を Mermaid 言語で作成するために動作し、ユーザーが指定したサービスやコンポーネントを理解しやすく整理された図として出力できるように支援します。Mermaid の構文に基づき、`graph TD` 形式を使用してサービス間の関係を視覚的に整理し、`subgraph` を活用してリソースグループやネットワークの階層構造を表現します。Azure の主要コンポーネントとして、コンピュート(VM, Azure Functions, App Services)、ストレージ(Blob Storage, SQL Database, Cosmos DB)、ネットワーク(VNet, Load Balancer, Firewall, vWAN)、アイデンティティ(Azure AD, Managed Identities)、その他(Logic Apps, API Management, Key Vault)をサポートします。ユーザーの要件に適応し、具体的なサービス構成が指定された場合は適切なノードとリンクを作成し、関係性が不明な場合は一般的な接続パターンを提供し、`style` を使用して異なるサービスの視覚的な強調を行います。ネットワーク系(VNet, Load Balancer, Firewall, vWAN)は緑色、PaaS 系(Azure Functions, App Services, Logic Apps)はオレンジ色、データベース系(Blob Storage, SQL Database, Cosmos DB)は青色、セキュリティ関連(Azure AD, Managed Identities, Key Vault)は赤色とし、その他のコンポーネントには適切な色を設定します。さらに、仮想ネットワークや vWAN などのネットワークリソースに属するサービスは `subgraph` を活用し、適切なグループ化を行うことで可読性と理解しやすさを向上させます。コードの可読性を重視し、コメントを付与して図の目的や各ノードの役割を説明し、インデントや改行を適切に使い明瞭なコード構造を実現します。これらの指示を含めることで、GitHub Copilot Agent がユーザーの意図に沿った、色分けとネットワークリソースのグループ化が施された Mermaid 形式の Azure 構成図を生成できるようになります。';
+
+const Architecture_PROMPT =
+	'あなたは経験豊富なクラウドアーキテクトかつMermaid Architecture記法のエキスパートです。https://mermaid.js.org/syntax/architecture.html のドキュメントとサンプル「architecture-beta group api(cloud)[API] service db(database)[Database] in api service disk1(disk)[Storage] in api service disk2(disk)[Storage] in api service server(server)[Server] in api db:L -- R:server disk1:T -- B:server disk2:T -- B:db」の文法（group: "group {group id}({icon name})[{title}]"、service: "service {service id}({icon name})[{title}]"（in {parent id} は任意）、edge: "{serviceId}:{T|B|L|R} {<}?--{>}? {T|B|L|R}:{serviceId}"）を厳守し、group や service のidにハイフン(-)を含めず、出力結果の冒頭に必ず ```architecture-beta を含めたGitHub Markdownのコードブロック形式で、group を仮想ネットワークやサブネット、リソースグループに、service を Azure のリソース（Azure Virtual Machines, Azure App Services, Azure SQL Database, Azure Blob Storage, Azure Functions など）に対応させたAzure構成図のMermaidコードとして出力してください。'
+
+const ArchitectureAzureIcon_PROMPT =
+	`あなたは経験豊富なクラウドアーキテクトかつMermaid Architecture記法のエキスパートです。https://mermaid.js.org/syntax/architecture.html のドキュメント、サンプル「architecture-beta group api(azure:resource-groups)[API] service db(azure:sql-database)[Database] in api service disk1(azure:storage-accounts)[Storage] in api service disk2(azure:storage-accounts)[Storage] in api service server(azure:virtual-machine)[Server] in api db:L -- R:server disk1:T -- B:server disk2:T -- B:db」および文法（group: "group {group id}({icon name})[{title}]"、service: "service {service id}({icon name})[{title}]" （in {parent id}は任意）、edge: "{serviceId}:{T|B|L|R} {<}?--{>}? {T|B|L|R}:{serviceId}"）を厳守し、group や service の id にはハイフン(-)を含めず、さらにオリジナルアイコンとして npm パッケージ「azureiconkento」（https://www.npmjs.com/package/azureiconkento?activeTab=versions）で提供されるアイコン（例: azure:sql-database, azure:storage-accounts, azure:virtual-machine など）を利用するよう指定し、出力結果の冒頭に必ず「architecture-beta」を含めた GitHub Markdown のコードブロック形式で、group を仮想ネットワークやサブネット、リソースグループに、service を Azure Virtual Machines, Azure App Services, Azure SQL Database, Azure Blob Storage, Azure Functions などに対応させた Azure 構成図の Mermaid コードとして出力してください。`
+
+	// This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	// Chat の処理を行う関数 
-	const handler: vscode.ChatRequestHandler = async (request: vscode.ChatRequest, context: vscode.ChatContext, stream: vscode.ChatResponseStream, token: vscode.CancellationToken): Promise<ICatChatResult> => {
-		// To talk to an LLM in your subcommand handler implementation, your
-		// extension can use VS Code's `requestChatAccess` API to access the Copilot API.
-		// The GitHub Copilot Chat extension implements this provider.
-		if (request.command == 'Architecture') {	// コマンドが Architecture コマンドの場合
-			stream.progress('Mermaid の図を考えています...');	// プログレスバーを表示
-			try {
-				const [model] = await vscode.lm.selectChatModels(MODEL_SELECTOR);	// モデルを取得
-				if (model) {	// モデルが取得できた場合
-					const messages = [	// メッセージを作成
-						vscode.LanguageModelChatMessage.User(system_prompt_architecture),	// システムプロンプトを追加
-						vscode.LanguageModelChatMessage.User(request.prompt)	// ユーザーの入力を追加
-					];
 
-					const chatResponse = await model.sendRequest(messages, {}, token);	// モデルにリクエストを送信
+	// define a chat handler
+	const handler: vscode.ChatRequestHandler = async (
+		request: vscode.ChatRequest,
+		context: vscode.ChatContext,
+		stream: vscode.ChatResponseStream,
+		token: vscode.CancellationToken
+	) => {
+		// initialize the prompt
+		let prompt = BASE_PROMPT;
 
-					stream.markdown('```\n');	// マークダウンのコードブロックを開始
-					for await (const fragment of chatResponse.text) {	// レスポンスのテキストを取得
-						stream.markdown(fragment);		// マークダウンに追加
-					}
-					stream.markdown('\n```');	// マークダウンのコードブロックを終了
-				}
-			} catch (err) {	// エラーが発生した場合
-				handleError(err, stream);
-			}
-
-			return { metadata: { command: 'Architecture' } };	// メタデータを返す
-		} else if (request.command == 'Flowchart'){	// コマンドが Flowchart コマンドの場合
-			stream.progress('Mermaid の図を考えています...');	// プログレスバーを表示
-			try {
-				const [model] = await vscode.lm.selectChatModels(MODEL_SELECTOR);	// モデルを取得
-				if (model) {	// モデルが取得できた場合
-					const messages = [	// メッセージを作成
-						vscode.LanguageModelChatMessage.User(system_prompt_flowchart),	// システムプロンプトを追加
-						vscode.LanguageModelChatMessage.User(request.prompt)	// ユーザーの入力を追加
-					];
-
-					const chatResponse = await model.sendRequest(messages, {}, token);	// モデルにリクエストを送信
-
-					stream.markdown('```\n');	// マークダウンのコードブロックを開始
-					for await (const fragment of chatResponse.text) {	// レスポンスのテキストを取得
-						stream.markdown(fragment);		// マークダウンに追加
-					}
-					stream.markdown('\n```');	// マークダウンのコードブロックを終了
-				}
-			} catch (err) {	// エラーが発生した場合
-				handleError(err, stream);
-			}
-
-			return { metadata: { command: 'Flowchart' } };	// メタデータを返す
-		} 
-		else {	// それ以外の場合
-			try {
-				const [model] = await vscode.lm.selectChatModels(MODEL_SELECTOR);	// モデルを取得
-				if (model) {	// モデルが取得できた場合
-					const messages = [	// メッセージを作成
-						vscode.LanguageModelChatMessage.User(`あなたは Mermaid を使って図を書くことが得意です。`),
-						vscode.LanguageModelChatMessage.User(request.prompt)
-					];
-
-					const chatResponse = await model.sendRequest(messages, {}, token);	// モデルにリクエストを送信
-					for await (const fragment of chatResponse.text) {	// レスポンスのテキストを取得
-						// Process the output from the language model
-						stream.markdown(fragment);
-					}
-				}
-			} catch (err) {
-				handleError(err, stream);	// エラーが発生した場合
-			}
-
-			return { metadata: { command: '' } };	// メタデータを返す
+		if (request.command === 'flowchart') {
+			prompt = Flowchart_PROMPT;
+		} else if (request.command === 'architecture') {
+			prompt = Architecture_PROMPT;
+		} else if (request.command === 'architecture-azureicon') {
+			prompt = ArchitectureAzureIcon_PROMPT;
 		}
-	};
 
-	// Chat participants appear as top-level options in the chat input
-	// when you type `@`, and can contribute sub-commands in the chat input
-	// that appear when you type `/`.
-	const mermaid = vscode.chat.createChatParticipant(CHAT_PARTICIPANT_ID, handler);	// ChatParticipantを作成
-	mermaid.iconPath = vscode.Uri.joinPath(context.extensionUri, 'azure_mermaid.jpg');	// アイコンを設定
-	mermaid.followupProvider = {	// フォローアッププロバイダーを設定
-		provideFollowups(result: ICatChatResult, context: vscode.ChatContext, token: vscode.CancellationToken) {	// フォローアップを提供
-			return [{	// フォローアップを返す
-				prompt: 'create a figure',	// プロンプトを設定
-				label: vscode.l10n.t('Create the figure'),	// ラベルを設定
-				command: 'azure_figure'	// コマンドを設定
-			} satisfies vscode.ChatFollowup];	// ChatFollowupを返す
-		}
-	};
+		// initialize the messages array with the prompt
+		const messages = [vscode.LanguageModelChatMessage.User(prompt)];
 
-	// よくわからないので ほとんどコピペ
-	context.subscriptions.push(	// ChatParticipantを登録
-		mermaid,	// ChatParticipantを登録
-		// 
-		vscode.commands.registerTextEditorCommand(MERMAID_NAMES_COMMAND_ID, async (textEditor: vscode.TextEditor) => {	// テキストエディタコマンドを登錻
-			// Get the text from the editor
-			const text = textEditor.document.getText();
 
-			let chatResponse: vscode.LanguageModelChatResponse | undefined;	// ChatResponseを初期化
-			try {
-				const [model] = await vscode.lm.selectChatModels({ vendor: 'copilot', family: 'gpt-4' });	// モデルを取得
-				if (!model) {	// モデルが取得できない場合
-					console.log('Model not found. Please make sure the GitHub Copilot Chat extension is installed and enabled.')
-					return;
-				}
-
-				const messages = [	// メッセージを作成
-					vscode.LanguageModelChatMessage.User(`You are a cat! Think carefully and step by step like a cat would.
-				Your job is to replace all variable names in the following code with funny cat variable names. Be creative. IMPORTANT respond just with code. Do not use markdown!`),
-					vscode.LanguageModelChatMessage.User(text)
-				];
-				chatResponse = await model.sendRequest(messages, {}, new vscode.CancellationTokenSource().token);
-
-			} catch (err) {	// エラーが発生した場合
-				if (err instanceof vscode.LanguageModelError) {	// エラーが LanguageModelError の場合
-					console.log(err.message, err.code, err.cause)
-				} else {	// それ以外の場合
-					throw err;
-				}
-				return;
-			}
-
-			// Clear the editor content before inserting new content
-			await textEditor.edit(edit => {	// エディタの内容をクリア
-				const start = new vscode.Position(0, 0);
-				const end = new vscode.Position(textEditor.document.lineCount - 1, textEditor.document.lineAt(textEditor.document.lineCount - 1).text.length);
-				edit.delete(new vscode.Range(start, end));
-			});
-
-			// Stream the code into the editor as it is coming in from the Language Model
-			try {
-				for await (const fragment of chatResponse.text) {	// レスポンスのテキストを取得
-					await textEditor.edit(edit => {
-						const lastLine = textEditor.document.lineAt(textEditor.document.lineCount - 1);
-						const position = new vscode.Position(lastLine.lineNumber, lastLine.text.length);
-						edit.insert(position, fragment);
-					});
-				}
-			} catch (err) {	// エラーが発生した場合
-				// async response stream may fail, e.g network interruption or server side error
-				await textEditor.edit(edit => {	
-					const lastLine = textEditor.document.lineAt(textEditor.document.lineCount - 1);
-					const position = new vscode.Position(lastLine.lineNumber, lastLine.text.length);
-					edit.insert(position, (<Error>err).message);
-				});
-			}
-		}),
-	);
-}
-
-function handleError(err: any, stream: vscode.ChatResponseStream): void {
-    // making the chat request might fail because
-    // - model does not exist
-    // - user consent not given
-    // - quote limits exceeded
-    if (err instanceof vscode.LanguageModelError) {
-        console.log(err.message, err.code, err.cause);
-        if (err.cause instanceof Error && err.cause.message.includes('off_topic')) {
-            stream.markdown(vscode.l10n.t('I\'m sorry, I can only explain computer science concepts.'));
+		// ★ アクティブ・ファイルの内容を追加 ★
+        const fileCtx = getCurrentFileContext();
+        if (fileCtx) {
+            messages.push(
+                vscode.LanguageModelChatMessage.User(
+                    `現在編集中のファイル ${path.basename(
+                        fileCtx.fileName
+                    )} の内容です:\n\`\`\`\n${fileCtx.content}\n\`\`\``
+                )
+            );
         }
-    } else {
-        // re-throw other errors so they show up in the UI
-        throw err;
-    }
+
+		// get all the previous participant messages
+		const previousMessages = context.history.filter(
+			h => h instanceof vscode.ChatResponseTurn
+		);
+
+		// add the previous messages to the messages array
+		previousMessages.forEach(m => {
+			let fullMessage = '';
+			m.response.forEach(r => {
+				const mdPart = r as vscode.ChatResponseMarkdownPart;
+				fullMessage += mdPart.value.value;
+			});
+			messages.push(vscode.LanguageModelChatMessage.Assistant(fullMessage));
+		});
+
+		// add in the user's message
+		messages.push(vscode.LanguageModelChatMessage.User(request.prompt));
+
+		// send the request
+		const chatResponse = await request.model.sendRequest(messages, {}, token);
+
+		// stream the response
+		for await (const fragment of chatResponse.text) {
+			stream.markdown(fragment);
+		}
+
+		return;
+	};
+
+	// create participant
+	const mermaid = vscode.chat.createChatParticipant('mermaid-azure', handler);
+
+	// add icon to participant
+	mermaid.iconPath = vscode.Uri.joinPath(context.extensionUri, 'azure_mermaid.jpg');
 }
 
 // This method is called when your extension is deactivated
